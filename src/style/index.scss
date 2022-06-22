@@ -1,0 +1,34 @@
+html {
+    height: 100%;
+    box-sizing: border-box;
+}
+
+/* 去除的margin */
+body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* 去除router-link与a的字体效果与下划线 */
+a:focus,
+a:active {
+    outline: none;
+}
+
+a,
+a:focus,
+a:hover {
+    cursor: pointer;
+    color: inherit;
+    text-decoration: none;
+}
+
+/* 去除input number默认的按钮 */
+input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+}
