@@ -24,7 +24,13 @@ a:hover {
     text-decoration: none;
 }
 
-/* 去除input number默认的按钮 */
+pre {
+    display: inline;
+    margin: 0;
+    font-family: '微软雅黑', serif;
+}
+
+    /* 去除input number默认的按钮 */
 input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
     -webkit-appearance: none;
 }

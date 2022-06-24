@@ -4,9 +4,8 @@
       <div
         style="position: relative; color: white; font-family: '微软雅黑',serif; font-size: 18px"
         v-for="log in logs"
-        :key="log">
-        {{ log.prefix + log.message }}
-      </div>
+        :key="log"
+        v-html="log.prefix ? log.prefix + log.message : log.message "/>
 
       <terminal-input @enter="enter"></terminal-input>
     </div>

@@ -4,7 +4,7 @@ import Terminal from '@/views/Terminal.vue'
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    name: 'Home',
+    name: 'Terminal',
     component: Terminal
   }
 ]

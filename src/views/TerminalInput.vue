@@ -1,12 +1,12 @@
 <template>
   <div class="terminal-input-container">
-    <div class="terminal-input-prefix">{{ inputPrefix }}</div>
+    <pre class="terminal-input-prefix">{{ inputPrefix }}</pre>
 
-    <span class="terminal-input-text">{{ inputData.substring(0, CaretIndex) }}</span>
+    <pre class="terminal-input-text">{{ inputData.substring(0, this.CaretIndex) }}</pre>
 
     <div class="terminal-input-caret">|</div>
 
-    <span class="terminal-input-text">{{ inputData.substring(CaretIndex) }}</span>
+    <pre class="terminal-input-text">{{ inputData.substring(this.CaretIndex) }}</pre>
   </div>
 </template>
 
@@ -19,7 +19,7 @@ import { Emit } from 'vue-property-decorator'
 })
 
 export default class Terminal extends Vue {
-  inputPrefix = '/>　'/* 全角空格 */
+  inputPrefix = '/> '
   inputData = ''
   inputCaret = 0
   inputStatus = {
@@ -72,7 +72,7 @@ export default class Terminal extends Vue {
   handleKeyPress (evt : KeyboardEvent) : void {
     if (evt.code === 'Enter') { return }
     if (evt.code === 'Space') {
-      this.input('　')/* 全角空格 */
+      this.input(' ')
       return
     }
     if (!this.inputStatus.ctrl) {
@@ -125,19 +125,21 @@ export default class Terminal extends Vue {
   line-height: 25px;
   color: white;
   font-size: 18px;
+  font-family: '微软雅黑', serif;
 
   .terminal-input-prefix {
-    display: inline-block;
+    display: inline;
     user-select: none;
   }
 
   .terminal-input-caret {
-    display: inline-block;
+    display: inline;
     animation: twinkling 1s infinite ease-in-out;
     user-select: none;
   }
 
   .terminal-input-text {
+    display: inline;
     cursor: default;
     word-wrap: break-word;
     word-break: normal;
