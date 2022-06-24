@@ -1,6 +1,6 @@
 <template>
   <div class="terminal-input-container">
-    <div class="terminal-input-prefix">/></div>
+    <div class="terminal-input-prefix">{{ inputPrefix }}</div>
 
     <span class="terminal-input-text">{{ inputData.substring(0, CaretIndex) }}</span>
 
@@ -12,12 +12,14 @@
 
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component'
+import { Emit } from 'vue-property-decorator'
 
 @Options({
   name: 'TerminalInput'
 })
 
 export default class Terminal extends Vue {
+  inputPrefix = '/>　'/* 全角空格 */
   inputData = ''
   inputCaret = 0
   inputStatus = {
@@ -25,10 +27,12 @@ export default class Terminal extends Vue {
     ctrl: false
   }
 
+  // Computed
   get CaretIndex () : number {
     return this.inputData.length + this.inputCaret
   }
 
+  // Methods
   handleKeyDown (evt : KeyboardEvent) : void {
     switch (evt.code) {
       case 'Backspace':
@@ -36,20 +40,17 @@ export default class Terminal extends Vue {
         break
       case 'Delete':
         this.inputData = this.inputData.substring(0, this.CaretIndex) + this.inputData.substring(this.CaretIndex + 1)
-        if (this.inputCaret < 0) {
-          this.inputCaret += 1
-        }
+        if (this.inputCaret < 0) { this.inputCaret += 1 }
+        break
+      case 'Enter':
+        this.enter()
         break
       // Caret Control
       case 'ArrowLeft':
-        if (this.CaretIndex > 0) {
-          this.inputCaret -= 1
-        }
+        if (this.CaretIndex > 0) { this.inputCaret -= 1 }
         break
       case 'ArrowRight':
-        if (this.inputCaret < 0) {
-          this.inputCaret += 1
-        }
+        if (this.inputCaret < 0) { this.inputCaret += 1 }
         break
       // Input Status
       case 'ControlLeft':
@@ -62,6 +63,10 @@ export default class Terminal extends Vue {
 
   handleKeyPress (evt : KeyboardEvent) : void {
     if (evt.code === 'Enter') { return }
+    if (evt.code === 'Space') {
+      this.inputData += '　'/* 全角空格 */
+      return
+    }
     if (!this.inputStatus.ctrl) {
       this.inputData += evt.key
     }
@@ -72,28 +77,37 @@ export default class Terminal extends Vue {
       case 'ControlLeft':
         this.inputStatus.ctrl = false
         break
-      default:
-        console.debug(evt.code)
     }
   }
 
   handlePaste (evt : Event) : void {
     const clipboardData = (evt as ClipboardEvent).clipboardData || (window as any).clipboardData
-    console.log(clipboardData) // 查看clipboardData
     const text = clipboardData.getData('text/plain')
     this.inputData += text
   }
 
-  handleSelect (evt : Event) : void {
-    console.log(evt)
+  // Emits
+  @Emit()
+  enter () : Record<string, string> {
+    const data = this.inputData
+    this.inputData = ''
+    this.inputCaret = 0
+    return { prefix: this.inputPrefix, str: data }
   }
 
+  // Hooks
   mounted () : void {
     window.addEventListener('keydown', this.handleKeyDown)
     window.addEventListener('keypress', this.handleKeyPress)
     window.addEventListener('keyup', this.handleKeyUp)
     window.addEventListener('paste', this.handlePaste)
-    window.addEventListener('select', this.handleSelect)
+  }
+
+  unmounted () : void {
+    window.removeEventListener('keydown', this.handleKeyDown)
+    window.removeEventListener('keypress', this.handleKeyPress)
+    window.removeEventListener('keyup', this.handleKeyUp)
+    window.removeEventListener('paste', this.handlePaste)
   }
 }
 </script>
@@ -106,7 +120,6 @@ export default class Terminal extends Vue {
 
   .terminal-input-prefix {
     display: inline-block;
-    margin-right: 10px;
     user-select: none;
   }
 

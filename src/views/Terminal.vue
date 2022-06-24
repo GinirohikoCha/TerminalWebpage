@@ -1,9 +1,9 @@
 <template>
   <div class="terminal-container">
     <div class="terminal-panel">
-      <div style="position: relative; color: white; font-family: '微软雅黑',serif" v-for="log in logs" :key="log">{{ log }}</div>
+      <div style="position: relative; color: white; font-family: '微软雅黑',serif; font-size: 18px" v-for="log in logs" :key="log">{{ log }}</div>
 
-      <terminal-input @enter="aaa"></terminal-input>
+      <terminal-input @enter="enter"></terminal-input>
     </div>
   </div>
 </template>
@@ -21,8 +21,8 @@ import TerminalInput from './TerminalInput.vue'
 export default class Terminal extends Vue {
   logs : string[] = []
 
-  aaa (a : string) : void {
-    this.logs.push(a)
+  enter (data : Record<string, string>) : void {
+    this.logs.push(data.prefix + data.str)
   }
 }
 </script>
