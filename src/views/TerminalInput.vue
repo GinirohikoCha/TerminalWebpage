@@ -33,6 +33,14 @@ export default class Terminal extends Vue {
   }
 
   // Methods
+  input (str : string) : void {
+    if (this.inputCaret === 0) {
+      this.inputData += str
+    } else {
+      this.inputData = this.inputData.substring(0, this.CaretIndex) + str + this.inputData.substring(this.CaretIndex)
+    }
+  }
+
   handleKeyDown (evt : KeyboardEvent) : void {
     switch (evt.code) {
       case 'Backspace':
@@ -64,11 +72,11 @@ export default class Terminal extends Vue {
   handleKeyPress (evt : KeyboardEvent) : void {
     if (evt.code === 'Enter') { return }
     if (evt.code === 'Space') {
-      this.inputData += '　'/* 全角空格 */
+      this.input('　')/* 全角空格 */
       return
     }
     if (!this.inputStatus.ctrl) {
-      this.inputData += evt.key
+      this.input(evt.key)
     }
   }
 
@@ -83,7 +91,7 @@ export default class Terminal extends Vue {
   handlePaste (evt : Event) : void {
     const clipboardData = (evt as ClipboardEvent).clipboardData || (window as any).clipboardData
     const text = clipboardData.getData('text/plain')
-    this.inputData += text
+    this.input(text)
   }
 
   // Emits
@@ -92,7 +100,7 @@ export default class Terminal extends Vue {
     const data = this.inputData
     this.inputData = ''
     this.inputCaret = 0
-    return { prefix: this.inputPrefix, str: data }
+    return { prefix: this.inputPrefix, message: data }
   }
 
   // Hooks
