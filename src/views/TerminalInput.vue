@@ -2,11 +2,11 @@
   <div class="terminal-input-container">
     <pre class="terminal-input-prefix">{{ inputPrefix }}</pre>
 
-    <pre class="terminal-input-text">{{ inputData.substring(0, this.CaretIndex) }}</pre>
+    <pre ref="textBefore" class="terminal-input-text">{{ inputData.substring(0, this.CaretIndex) }}</pre>
 
     <div class="terminal-input-caret">|</div>
 
-    <pre class="terminal-input-text">{{ inputData.substring(this.CaretIndex) }}</pre>
+    <pre ref="textAfter" class="terminal-input-text">{{ inputData.substring(this.CaretIndex) }}</pre>
   </div>
 </template>
 
@@ -26,6 +26,9 @@ export default class Terminal extends Vue {
     shift: false,
     ctrl: false
   }
+
+  selectStart = -1
+  selectEnd = -1
 
   // Computed
   get CaretIndex () : number {
@@ -56,13 +59,22 @@ export default class Terminal extends Vue {
       // Caret Control
       case 'ArrowLeft':
         if (this.CaretIndex > 0) { this.inputCaret -= 1 }
+        if (this.inputStatus.shift) {
+          this.selectLeft()
+        }
         break
       case 'ArrowRight':
         if (this.inputCaret < 0) { this.inputCaret += 1 }
+        if (this.inputStatus.shift) {
+          this.selectRight()
+        }
         break
       // Input Status
       case 'ControlLeft':
         this.inputStatus.ctrl = true
+        break
+      case 'ShiftLeft':
+        this.inputStatus.shift = true
         break
       default:
         console.debug(evt.code)
@@ -85,6 +97,10 @@ export default class Terminal extends Vue {
       case 'ControlLeft':
         this.inputStatus.ctrl = false
         break
+      case 'ShiftLeft':
+        this.inputStatus.shift = false
+        this.selectStart = -1
+        break
     }
   }
 
@@ -92,6 +108,62 @@ export default class Terminal extends Vue {
     const clipboardData = (evt as ClipboardEvent).clipboardData || (window as any).clipboardData
     const text = clipboardData.getData('text/plain')
     this.input(text)
+  }
+
+  selectLeft () {
+    if (this.selectStart === -1) {
+      this.selectStart = this.CaretIndex
+      this.selectEnd = this.CaretIndex
+      requestAnimationFrame(() => {
+        this.selectText(this.$refs.textAfter as HTMLElement, this.selectStart - this.CaretIndex, this.selectEnd - this.CaretIndex)
+      })
+    } else if (this.CaretIndex < this.selectStart) {
+      this.selectStart = this.CaretIndex
+      requestAnimationFrame(() => {
+        this.selectText(this.$refs.textAfter as HTMLElement, this.selectStart - this.CaretIndex, this.selectEnd - this.CaretIndex)
+      })
+    } else if (this.CaretIndex <= this.selectEnd) {
+      this.selectEnd = this.CaretIndex - 1
+      requestAnimationFrame(() => {
+        this.selectText(this.$refs.textBefore as HTMLElement, this.selectStart, this.selectEnd)
+      })
+    }
+  }
+
+  selectRight () {
+    if (this.selectStart === -1) {
+      this.selectStart = this.CaretIndex - 1
+      this.selectEnd = this.CaretIndex - 1
+      requestAnimationFrame(() => {
+        this.selectText(this.$refs.textBefore as HTMLElement, this.selectStart, this.selectEnd)
+      })
+    } else if (this.CaretIndex > this.selectEnd) {
+      this.selectEnd = this.CaretIndex - 1
+      requestAnimationFrame(() => {
+        this.selectText(this.$refs.textBefore as HTMLElement, this.selectStart, this.selectEnd)
+      })
+    } else if (this.CaretIndex > this.selectStart) {
+      this.selectStart = this.CaretIndex
+      requestAnimationFrame(() => {
+        this.selectText(this.$refs.textAfter as HTMLElement, this.selectStart - this.CaretIndex, this.selectEnd - this.CaretIndex)
+      })
+    }
+  }
+
+  selectText (obj : HTMLElement, start : number, stop: number) : void{
+    const node = obj.childNodes[0]
+
+    if (node.nodeValue) {
+      node.nodeValue = node.nodeValue.trim()
+    }
+    const range = document.createRange()
+    range.setStart(node, start)
+    range.setEnd(node, stop + 1)
+    const sel = window.getSelection()
+    if (sel) {
+      sel.removeAllRanges()
+      sel.addRange(range)
+    }
   }
 
   // Emits
